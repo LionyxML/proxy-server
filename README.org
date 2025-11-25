@@ -1,0 +1,142 @@
+#+TITLE: Node.js Proxy with Delay and Failure Simulation
+#+AUTHOR: Rahul M. Juliato
+#+EMAIL: rahul.juliato@gmail.com
+#+DATE: 2025-11-25
+#+OPTIONS: toc:nil
+
+* Node.js Proxy with Delay and Failure Simulation
+
+** Overview
+
+This project is a Node.js/Express-based HTTP proxy server that allows
+you to:
+
+- Forward requests to a target server.
+
+- Apply artificial delays to specific routes.
+
+- Simulate endpoint failures a certain number of times before
+  returning a successful response.
+
+- Handle CORS and proxy all request methods.
+
+It is useful for testing front-end applications against slow,
+unreliable, or failing backend endpoints.
+
+** Features
+
+- **Configurable target URL**: The backend server to proxy requests to.
+
+- **Delayed routes**: Specify routes that should be delayed by a fixed
+  amount of time (ms).
+
+- **Failure simulation**: Specify routes that fail N times (or
+  indefinitely) before returning the real backend response.
+
+- **CORS support**: Automatically handles OPTIONS preflight requests and
+  sets the necessary headers.
+
+- **Raw body forwarding**: Maintains the original response body and
+  status codes.
+
+** Configuration
+
+**Local port**
+The proxy runs locally on a configurable port:
+
+#+BEGIN_SRC typescript
+const LOCAL_PORT = 9000;
+#+END_SRC
+
+**Target URL**
+Set the backend server to forward requests to:
+
+#+BEGIN_SRC typescript
+const TARGET_URL = "https://your_real_domain/v2/api";
+#+END_SRC
+
+**Delayed routes**
+Define routes and delays (in milliseconds):
+
+#+BEGIN_SRC typescript
+const delayedRoutes: Record<string, number> = {
+  "/api/user/features": 5000,
+};
+#+END_SRC
+
+**Failure simulation**
+Define routes that should fail:
+
+Format: =[endpoint, timesToFail, statusCode]=
+=timesToFail= = number of failures before success
+=-1= = fail indefinitely
+
+#+BEGIN_SRC typescript
+const failRoutes: Array<[string, number, number]> = [
+  ["/api/user/features", 4, 400], ;; fails 4 times with HTTP 400
+];
+#+END_SRC
+
+** How it works
+
+1. **CORS preflight**
+
+   * Automatically responds to OPTIONS requests with the proper
+     headers.
+
+2. **Delay middleware**
+
+   * Checks if the route matches any configured delayed route.
+   * Waits the configured milliseconds before continuing.
+
+3. **Failure middleware**
+
+   * Checks if the route is in =failRoutes=.
+   * If the number of failures hasn't been reached, it returns the
+     specified status code and increments the fail counter.
+
+4. **Proxying**
+
+   * Forwards the request to the target URL.
+   * Reads the request body for POST/PUT/PATCH requests.
+   * Returns the backend response, preserving status code, headers,
+     and body.
+
+** Running the proxy
+
+Install dependencies:
+
+#+BEGIN_SRC bash
+pnpm install
+#+END_SRC
+
+Start the proxy:
+
+#+BEGIN_SRC bash
+pnpm proxy
+#+END_SRC
+
+Access the proxy at:
+
+#+BEGIN_SRC
+http://localhost:9000
+#+END_SRC
+
+Requests will be forwarded to the =TARGET_URL=.
+
+** Notes
+
+- Delays are applied **before** failure simulation.
+- Empty backend responses are forwarded correctly without turning into
+  ={}=.
+- Use =failRoutes= to test retry logic in your front-end applications.
+
+** Example
+  A request to =/api/user/features= will:
+
+1. Wait 5 seconds (configured delay).
+2. Fail with 400 for the first 4 requests.
+3. On the 5th request, return the real backend response.
+
+** License
+  MIT License
