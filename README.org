@@ -4,8 +4,6 @@
 #+DATE: 2025-11-25
 #+OPTIONS: toc:nil
 
-* Node.js Proxy with Delay and Failure Simulation
-
 ** Overview
 
 This project is a Node.js/Express-based HTTP proxy server that allows
@@ -25,37 +23,37 @@ unreliable, or failing backend endpoints.
 
 ** Features
 
-- **Configurable target URL**: The backend server to proxy requests to.
+- =Configurable target URL=: The backend server to proxy requests to.
 
-- **Delayed routes**: Specify routes that should be delayed by a fixed
+- =Delayed routes=: Specify routes that should be delayed by a fixed
   amount of time (ms).
 
-- **Failure simulation**: Specify routes that fail N times (or
+- =Failure simulation=: Specify routes that fail N times (or
   indefinitely) before returning the real backend response.
 
-- **CORS support**: Automatically handles OPTIONS preflight requests and
+- =CORS support=: Automatically handles OPTIONS preflight requests and
   sets the necessary headers.
 
-- **Raw body forwarding**: Maintains the original response body and
+- =Raw body forwarding=: Maintains the original response body and
   status codes.
 
 ** Configuration
 
-**Local port**
+=Local port=
 The proxy runs locally on a configurable port:
 
 #+BEGIN_SRC typescript
 const LOCAL_PORT = 9000;
 #+END_SRC
 
-**Target URL**
+=Target URL=
 Set the backend server to forward requests to:
 
 #+BEGIN_SRC typescript
 const TARGET_URL = "https://your_real_domain/v2/api";
 #+END_SRC
 
-**Delayed routes**
+=Delayed routes=
 Define routes and delays (in milliseconds):
 
 #+BEGIN_SRC typescript
@@ -64,7 +62,7 @@ const delayedRoutes: Record<string, number> = {
 };
 #+END_SRC
 
-**Failure simulation**
+=Failure simulation=
 Define routes that should fail:
 
 Format: =[endpoint, timesToFail, statusCode]=
@@ -79,23 +77,23 @@ const failRoutes: Array<[string, number, number]> = [
 
 ** How it works
 
-1. **CORS preflight**
+1. =CORS preflight=
 
    * Automatically responds to OPTIONS requests with the proper
      headers.
 
-2. **Delay middleware**
+2. =Delay middleware=
 
    * Checks if the route matches any configured delayed route.
    * Waits the configured milliseconds before continuing.
 
-3. **Failure middleware**
+3. =Failure middleware=
 
    * Checks if the route is in =failRoutes=.
    * If the number of failures hasn't been reached, it returns the
      specified status code and increments the fail counter.
 
-4. **Proxying**
+4. =Proxying=
 
    * Forwards the request to the target URL.
    * Reads the request body for POST/PUT/PATCH requests.
@@ -126,7 +124,7 @@ Requests will be forwarded to the =TARGET_URL=.
 
 ** Notes
 
-- Delays are applied **before** failure simulation.
+- Delays are applied =before= failure simulation.
 - Empty backend responses are forwarded correctly without turning into
   ={}=.
 - Use =failRoutes= to test retry logic in your front-end applications.
